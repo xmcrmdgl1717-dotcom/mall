@@ -8,16 +8,26 @@ const router = createRouter({
       path: '/',
       name: 'Home',
       component: Home
-    }, // <-- 注意这里必须要有逗号！
+    },
     {
       path: '/product/:id',
       name: 'ProductDetail',
       component: () => import('../views/ProductDetail.vue')
     },
     {
-  path: '/cart',
-  name: 'Cart',
-  component: () => import('../views/Cart.vue')
+      path: '/cart',
+      name: 'Cart',
+      component: () => import('../views/Cart.vue')
+    },
+    {
+      path: '/checkout',
+      name: 'Checkout',
+      component: () => import('../views/Checkout.vue')
+    },
+    {
+      path: '/orders',
+      name: 'Orders',
+      component: () => import('../views/Orders.vue')
     }
   ]
 })
