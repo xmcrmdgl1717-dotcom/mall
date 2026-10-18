@@ -16,7 +16,7 @@ func main() {
 		log.Fatal("db connect failed: ", err)
 	}
 
-	// 自动迁移建表 (加入了 Role 和 User)
+	// 自动迁移建表
 	err = db.AutoMigrate(
 		&model.Category{},
 		&model.Product{},
@@ -26,8 +26,8 @@ func main() {
 		&model.Cart{},
 		&model.Order{},
 		&model.OrderItem{},
-		&model.Role{}, // 新增
-		&model.User{}, // 新增
+		&model.Role{},
+		&model.User{},
 	)
 	if err != nil {
 		log.Println("AutoMigrate failed:", err)
@@ -35,27 +35,24 @@ func main() {
 		log.Println("Database migrated successfully")
 	}
 
-	// 初始化默认管理员账号
-	var count int64
-	db.Model(&model.AdminUser{}).Where("username = ?", "admin").Count(&count)
-	if count == 0 {
-		db.Create(&model.AdminUser{
-			Username: "admin",
-			Password: "admin123",
-			RoleID:   1, // 默认绑定超级管理员角色
-		})
-		log.Println("Default admin account created: admin / admin123")
-	}
-
-	// 初始化默认角色
+	// ==========================================
+	// 核心修复：自动创建超级管理员账号
+	// ==========================================
 	var roleCount int64
 	db.Model(&model.Role{}).Count(&roleCount)
 	if roleCount == 0 {
-		db.Create(&model.Role{
-			Name:        "超级管理员",
-			Description: "拥有所有权限",
+		db.Create(&model.Role{Name: "超级管理员", Description: "拥有所有权限"})
+	}
+
+	var adminCount int64
+	db.Model(&model.AdminUser{}).Where("username = ?", "admin").Count(&adminCount)
+	if adminCount == 0 {
+		db.Create(&model.AdminUser{
+			Username: "admin",
+			Password: "admin123", // 如果登录失败，密码就绝对是这个
+			RoleID:   1,
 		})
-		log.Println("Default role created: Super Admin")
+		log.Println("✅ 默认管理员账号已自动生成: admin / admin123")
 	}
 
 	// 启动服务
