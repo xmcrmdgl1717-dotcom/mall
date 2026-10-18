@@ -98,12 +98,21 @@ const openDialog = () => {
 
 const submitForm = async () => {
   if (!form.title) return ElMessage.warning('请输入商品标题')
-  // 注意：这里目前只写了前端逻辑，你需要去 Go 后端写一个 POST /products 接口才能真正保存到数据库
-  ElMessage.success('商品发布成功！(注: 需对接Go后端保存)')
-  dialogVisible.value = false
-  fetchData()
+  try {
+    await axios.post(`${API_BASE}/products`, {
+      title: form.title,
+      main_image: form.main_image,
+      min_price: form.price
+    })
+    ElMessage.success('商品发布成功！')
+    dialogVisible.value = false
+    fetchData() // 刷新表格
+  } catch (error) {
+    ElMessage.error('发布失败，请检查后端')
+  }
 }
 
+  
 onMounted(() => {
   fetchData()
 })
