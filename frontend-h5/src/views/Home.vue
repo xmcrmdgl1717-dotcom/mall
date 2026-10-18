@@ -5,8 +5,13 @@
       <div class="top-bar">
         <div class="logo">FRESH<span>CO</span></div>
         <div class="search-bar">
-          <input type="text" placeholder="Search for brand/product/suppliers" />
-          <button>Search</button>
+          <input 
+            type="text" 
+            v-model="homeSearchKey" 
+            placeholder="Search for brand/product/suppliers" 
+            @keyup.enter="doSearch"
+          />
+          <button @click="doSearch">Search</button>
         </div>
         <div class="user-actions">
           <span>👤 Log in or Register</span>
@@ -162,10 +167,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { getProducts } from '../api/product'
 import { getCategories } from '../api/category'
 import { getTopMerchants } from '../api/merchant'
+
+const router = useRouter()
+const homeSearchKey = ref('')
 
 const dailyDeals = ref([])
 const popularItems = ref([])
@@ -175,6 +184,15 @@ const categories = ref([])
 const bannerList = ref([])
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://mall-api-l3mx.onrender.com/api/v1'
+
+// 搜索跳转逻辑
+const doSearch = () => {
+  if (homeSearchKey.value.trim()) {
+    router.push('/products?keyword=' + homeSearchKey.value.trim())
+  } else {
+    router.push('/products')
+  }
+}
 
 onMounted(async () => {
   try {
