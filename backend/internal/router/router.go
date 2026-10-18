@@ -20,7 +20,11 @@ func New(db *gorm.DB) *gin.Engine {
 	
 	categoryRepo := repository.NewCategoryRepo(db)
 	categoryHandler := handler.NewCategoryHandler(categoryRepo)
+   // 在已有的路由组里加上：
+    merchantRepo := repository.NewMerchantRepo(db)
+    merchantHandler := handler.NewMerchantHandler(merchantRepo)
 
+api.GET("/merchants/top", merchantHandler.ListTop)
 	api := r.Group("/api/v1")
 	{
 		api.GET("/products", productHandler.List)
