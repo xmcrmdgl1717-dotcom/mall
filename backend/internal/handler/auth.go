@@ -3,6 +3,7 @@ package handler
 import (
 	"mall/backend/internal/pkg/jwt"
 	"mall/backend/internal/pkg/response"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -28,15 +29,22 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	// 验证账号密码
-	var adminId uint64
-	err := h.db.Raw("SELECT id FROM admin_user WHERE username = ? AND password = ?", req.Username, req.Password).Scan(&adminId).Error
-	if err != nil || adminId == 0 {
+	// 1. 定义临时结构体接收查询结果
+	type AdminUser struct {
+		ID     uint64
+		RoleID uint64
+	}
+	var admin AdminUser
+
+	// 2. 验证账号密码（使用 GORM 原生查询）
+	h.db.Table("admin_users").Where("username = ? AND password = ?", req.Username, req.Password).First(&admin)
+
+	if admin.ID == 0 {
 		response.Fail(c, 401, "账号或密码错误")
 		return
 	}
 
-	// 签发 Token
-	token, _ := jwt.GenerateToken(h.secret, adminId)
-	response.OK(c, gin.H{"token": token})
+	// 3. 签发 Token (必须传 3 个参数，带上 admin.RoleID)
+	token, _ := jwt.GenerateToken(h.secret, admin.ID, admin.RoleID)
+	response.OK(c, gin.H{"token": token, "role_id": admin.RoleID})
 }
