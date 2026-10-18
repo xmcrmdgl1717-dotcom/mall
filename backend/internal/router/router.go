@@ -14,7 +14,6 @@ import (
 func New(db *gorm.DB, secret string) *gin.Engine {
 	r := gin.Default()
 
-	// 允许跨域
 	r.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
@@ -33,10 +32,10 @@ func New(db *gorm.DB, secret string) *gin.Engine {
 	authHandler := handler.NewAuthHandler(db, secret)
 	userHandler := handler.NewUserHandler(db)
 
-	// 注册路由
+	// 注册路由组
 	api := r.Group("/api/v1")
 	{
-		// 鉴权与用户
+		// 登录与用户
 		api.POST("/admin/login", authHandler.Login)
 		api.GET("/admin/users", userHandler.GetBuyers)
 
@@ -57,6 +56,7 @@ func New(db *gorm.DB, secret string) *gin.Engine {
 		// 订单
 		api.POST("/orders", orderHandler.Create)
 		api.GET("/orders", orderHandler.List)
+		api.PUT("/orders/:id/ship", orderHandler.ShipOrder) // 👈 新增发货路由
 	}
 	
 	return r
