@@ -32,7 +32,6 @@
       </el-table-column>
     </el-table>
 
-    <!-- 新增商品弹窗 -->
     <el-dialog v-model="dialogVisible" title="新增商品" width="500px">
       <el-form :model="form" label-width="80px">
         <el-form-item label="商品标题">
@@ -65,27 +64,20 @@ const submitting = ref(false)
 const tableData = ref([])
 const dialogVisible = ref(false)
 
-const form = reactive({
-  title: '',
-  main_image: 'https://picsum.photos/200',
-  price: 0
-})
+const form = reactive({ title: '', main_image: 'https://picsum.photos/200', price: 0 })
 
-// 你的真实后端地址
-const API_BASE = 'https://mall-api-l3mx.onrender.com/api/v1'
+// ✅ 标准的读取环境变量写法
+const API_BASE = import.meta.env.VITE_API_BASE
 
 const fetchData = async () => {
   loading.value = true
   try {
-    // 商品列表接口也建议带上 Token（虽然目前后端没拦截，但养成好习惯）
-    const token = localStorage.getItem('admin_token')
-    const res = await axios.get(`${API_BASE}/products`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    const res = await axios.get(`${API_BASE}/products`)
     tableData.value = res.data.data.list || []
+    if (tableData.value.length === 0) ElMessage.info('目前没有商品，请点击新增')
   } catch (error) {
-    console.error(error)
-    ElMessage.error('获取数据失败，后端可能正在唤醒，请稍后刷新')
+    console.error('商品请求失败:', error)
+    ElMessage.error('获取数据失败，可能是后端正在唤醒')
   } finally {
     loading.value = false
   }
@@ -102,25 +94,20 @@ const submitForm = async () => {
   if (!form.title) return ElMessage.warning('请输入商品标题')
   submitting.value = true
   try {
-    const token = localStorage.getItem('admin_token')
     await axios.post(`${API_BASE}/products`, {
       title: form.title,
       main_image: form.main_image,
       min_price: form.price
-    }, {
-      headers: { Authorization: `Bearer ${token}` }
     })
     ElMessage.success('商品发布成功！')
     dialogVisible.value = false
-    fetchData() // 刷新表格
+    fetchData()
   } catch (error) {
-    ElMessage.error('发布失败，请检查后端')
+    ElMessage.error('发布失败')
   } finally {
     submitting.value = false
   }
 }
 
-onMounted(() => {
-  fetchData()
-})
+onMounted(() => { fetchData() })
 </script>
