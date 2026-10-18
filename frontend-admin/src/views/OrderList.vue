@@ -7,7 +7,7 @@
 
     <el-table :data="tableData" v-loading="loading" border style="width: 100%">
       <el-table-column prop="order_no" label="订单号" width="180" />
-      <el-table-column label="收货信息" width="250">
+      <el-table-column label="收货人" width="200">
         <template #default="scope">
           <div>{{ scope.row.address_name }} ({{ scope.row.address_phone }})</div>
           <div style="font-size: 12px; color: #999;">{{ scope.row.address_detail }}</div>
@@ -21,40 +21,43 @@
         </template>
       </el-table-column>
       <el-table-column prop="total_amount" label="总价" width="120">
-        <template #default="scope"><span style="color: #f56c6c; font-weight: bold;">$ {{ scope.row.total_amount }}</span></template>
+        <template #default="scope"><span style="color: #f56c6c;">$ {{ scope.row.total_amount }}</span></template>
       </el-table-column>
       <el-table-column label="状态" width="100">
         <template #default="scope">
-          <el-tag :type="scope.row.status === 1 ? 'success' : 'warning'">
-            {{ scope.row.status === 1 ? '已付款' : '待处理' }}
-          </el-tag>
+          <el-tag :type="getStatusType(scope.row.status)">{{ getStatusText(scope.row.status) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="120">
-        <template #default>
-          <el-button size="small" type="primary" link>发货</el-button>
+      <el-table-column label="操作" width="150" fixed="right">
+        <template #default="scope">
+          <el-button 
+            v-if="scope.row.status === 1" 
+            size="small" 
+            type="success" 
+            @click="handleShip(scope.row.id)"
+          >
+            点击发货
+          </el-button>
+          <span v-else style="color: #999; font-size: 12px;">无需操作</span>
         </template>
       </el-table-column>
     </el-table>
-    
-    <el-empty v-if="tableData.length === 0 && !loading" description="暂无订单数据" />
   </el-card>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const loading = ref(false)
 const tableData = ref([])
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080/api/v1'
+const API_BASE = import.meta.env.VITE_API_BASE
 
 const fetchOrders = async () => {
   loading.value = true
   try {
-    // 这里调用的是后台获取全部订单的接口 (注意：你之前后端写的获取订单列表可能默认查的是 user_id=1 的订单，这里实际开发需要写一个新的后台查全量订单接口，这里先占位)
-    const res = await axios.get(`${API_BASE}/orders`) 
+    const res = await axios.get(`${API_BASE}/orders`)
     tableData.value = res.data.data || []
   } catch (error) {
     ElMessage.error('获取订单失败')
@@ -63,7 +66,27 @@ const fetchOrders = async () => {
   }
 }
 
-onMounted(() => {
-  fetchOrders()
-})
+// 处理发货
+const handleShip = (orderId) => {
+  ElMessageBox.confirm('确认该订单已打包并发出？', '发货确认', { type: 'warning' }).then(async () => {
+    try {
+      await axios.put(`${API_BASE}/orders/${orderId}/ship`)
+      ElMessage.success('发货成功！')
+      fetchOrders() // 刷新列表
+    } catch (e) {
+      ElMessage.error('发货失败')
+    }
+  }).catch(() => {})
+}
+
+const getStatusText = (status) => {
+  const map = { 0: '待付款', 1: '待发货', 2: '已发货', 3: '已完成' }
+  return map[status] || '未知'
+}
+const getStatusType = (status) => {
+  const map = { 0: 'info', 1: 'warning', 2: 'success', 3: 'success' }
+  return map[status] || 'info'
+}
+
+onMounted(() => { fetchOrders() })
 </script>
