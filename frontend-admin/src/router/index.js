@@ -11,26 +11,12 @@ const routes = [
     component: () => import('../components/Layout.vue'),
     redirect: '/dashboard',
     children: [
-      {
-        path: 'dashboard',
-        name: 'Dashboard',
-        component: () => import('../views/Dashboard.vue')
-      },
-      {
-        path: 'products',
-        name: 'Products',
-        component: () => import('../views/ProductList.vue')
-      },
-      {
-        path: 'users', // 新增：买家管理
-        name: 'Users',
-        component: () => import('../views/UserList.vue')
-      },
-      {
-        path: 'orders', // 新增：订单管理 (后续做)
-        name: 'Orders',
-        component: () => import('../views/OrderList.vue')
-      }
+      { path: 'dashboard', name: 'Dashboard', component: () => import('../views/Dashboard.vue') },
+      { path: 'products', name: 'Products', component: () => import('../views/ProductList.vue') },
+      { path: 'categories', name: 'Categories', component: () => import('../views/CategoryList.vue') }, // 👈 新增
+      { path: 'orders', name: 'Orders', component: () => import('../views/OrderList.vue') },
+      { path: 'users', name: 'Users', component: () => import('../views/UserList.vue') },
+      { path: 'banners', name: 'Banners', component: () => import('../views/BannerList.vue') } // 下一步用
     ]
   }
 ]
