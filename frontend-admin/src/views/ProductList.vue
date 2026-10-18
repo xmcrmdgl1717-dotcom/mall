@@ -44,14 +44,11 @@
         <el-form-item label="售价">
           <el-input-number v-model="form.price" :precision="2" :step="1" />
         </el-form-item>
-        <el-form-item label="库存">
-          <el-input-number v-model="form.stock" :step="10" />
-        </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitForm">确定发布</el-button>
+          <el-button type="primary" :loading="submitting" @click="submitForm">确定发布</el-button>
         </span>
       </template>
     </el-dialog>
@@ -64,25 +61,31 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 const loading = ref(false)
+const submitting = ref(false)
 const tableData = ref([])
 const dialogVisible = ref(false)
 
 const form = reactive({
   title: '',
-  main_image: '',
-  price: 0,
-  stock: 100
+  main_image: 'https://picsum.photos/200',
+  price: 0
 })
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080/api/v1'
+// 你的真实后端地址
+const API_BASE = 'https://mall-api-l3mx.onrender.com/api/v1'
 
 const fetchData = async () => {
   loading.value = true
   try {
-    const res = await axios.get(`${API_BASE}/products`)
+    // 商品列表接口也建议带上 Token（虽然目前后端没拦截，但养成好习惯）
+    const token = localStorage.getItem('admin_token')
+    const res = await axios.get(`${API_BASE}/products`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
     tableData.value = res.data.data.list || []
   } catch (error) {
-    ElMessage.error('获取数据失败')
+    console.error(error)
+    ElMessage.error('获取数据失败，后端可能正在唤醒，请稍后刷新')
   } finally {
     loading.value = false
   }
@@ -92,27 +95,31 @@ const openDialog = () => {
   form.title = ''
   form.main_image = 'https://picsum.photos/200'
   form.price = 0
-  form.stock = 100
   dialogVisible.value = true
 }
 
 const submitForm = async () => {
   if (!form.title) return ElMessage.warning('请输入商品标题')
+  submitting.value = true
   try {
+    const token = localStorage.getItem('admin_token')
     await axios.post(`${API_BASE}/products`, {
       title: form.title,
       main_image: form.main_image,
       min_price: form.price
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
     })
     ElMessage.success('商品发布成功！')
     dialogVisible.value = false
     fetchData() // 刷新表格
   } catch (error) {
     ElMessage.error('发布失败，请检查后端')
+  } finally {
+    submitting.value = false
   }
 }
 
-  
 onMounted(() => {
   fetchData()
 })
