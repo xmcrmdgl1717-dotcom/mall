@@ -9,7 +9,8 @@ type Config struct {
 
 func Load() *Config {
     return &Config{
-        DBDSN: getEnv("DB_DSN", "root:root@tcp^(127.0.0.1:3306^)/mall?charset=utf8mb4^&parseTime=True^&loc=Local"),
+        // 把原来的 MySQL 默认串改成这样：
+        DBDSN: getEnv("DB_DSN", "host=localhost user=postgres password=root dbname=mall port=5432 sslmode=disable"),
         Port:  getEnv("PORT", "8080"),
     }
 }
