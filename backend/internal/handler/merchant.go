@@ -6,11 +6,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type MerchantHandler struct { repo *repository.MerchantRepo }
-func NewMerchantHandler(repo *repository.MerchantRepo) *MerchantHandler { return &MerchantHandler{repo: repo} }
+type MerchantHandler struct { 
+	repo *repository.MerchantRepo 
+}
+
+func NewMerchantHandler(repo *repository.MerchantRepo) *MerchantHandler { 
+	return &MerchantHandler{repo: repo} 
+}
 
 func (h *MerchantHandler) ListTop(c *gin.Context) {
-	list, err := h.repo.GetTopMerchants(3) // 首页拿3个热门店铺
+	list, err := h.repo.GetTopMerchants(3)
 	if err != nil {
 		response.Fail(c, 500, "query failed")
 		return
