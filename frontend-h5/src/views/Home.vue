@@ -4,6 +4,8 @@
     <header class="header">
       <div class="top-bar">
         <div class="logo">FRESH<span>CO</span></div>
+        
+        <!-- 搜索栏 -->
         <div class="search-bar">
           <input 
             type="text" 
@@ -13,12 +15,14 @@
           />
           <button @click="doSearch">Search</button>
         </div>
-        <!-- 👇 更新：个人中心与购物车跳转 -->
+        
+        <!-- 已修改：用户操作区 -->
         <div class="user-actions">
-          <span @click="$router.push('/user')" style="cursor: pointer; font-weight: bold;">👤 My Account</span>
-          <span @click="$router.push('/cart')" style="cursor: pointer; margin-left: 15px;">🛒 Cart</span>
+          <span @click="$router.push('/user')" style="cursor: pointer;">👤 Me</span>
+          <span @click="$router.push('/cart')" style="cursor: pointer;">🛒 Cart</span>
         </div>
       </div>
+      
       <nav class="nav-links">
         <a href="#">Home</a>
         <a href="#">Category</a>
@@ -30,7 +34,7 @@
     </header>
 
     <main class="main-content">
-      <!-- 动态 Banner 轮播区 (带跳转) -->
+      <!-- 动态 Banner 轮播区 -->
       <div class="banner-section" v-if="bannerList.length > 0">
         <van-swipe class="my-swipe" :autoplay="3000" indicator-color="white" style="width: 100%; border-radius: 8px; height: 350px;">
           <van-swipe-item 
@@ -43,7 +47,6 @@
           </van-swipe-item>
         </van-swipe>
       </div>
-      <!-- 如果后台没配 Banner，显示占位图 -->
       <div class="banner-section" v-else>
         <img src="https://picsum.photos/1200/350?grayscale" style="width: 100%; border-radius: 8px; height: 350px; object-fit: cover;" />
       </div>
@@ -115,7 +118,7 @@
         </div>
       </section>
 
-      <!-- Popular Stores (带点击跳转和鼠标手势) -->
+      <!-- Popular Stores -->
       <section class="section">
         <div class="section-header">
           <h2>Popular Stores</h2>
@@ -197,12 +200,15 @@ const doSearch = () => {
 
 onMounted(async () => {
   try {
+    // 1. 获取动态 Banner
     const bannerRes = await axios.get(`${API_BASE}/banners`)
     bannerList.value = bannerRes.data.data || []
 
+    // 2. 获取动态分类
     const catRes = await getCategories()
     categories.value = catRes.data.data || []
 
+    // 3. 获取商品与店铺
     const dailyRes = await getProducts({ deal_type: 'daily', size: 10 })
     dailyDeals.value = dailyRes.data.data.list || []
 
@@ -215,6 +221,7 @@ onMounted(async () => {
     const storeRes = await getTopMerchants()
     popularStores.value = storeRes.data.data || []
     
+    // 兜底：如果每日特惠没数据，用热门商品填补
     if (dailyDeals.value.length === 0) {
        dailyDeals.value = popularItems.value.slice(0, 5)
     }
@@ -235,6 +242,11 @@ onMounted(async () => {
 .search-bar button { padding: 10px 20px; background: #000; color: #fff; border: 2px solid #000; border-radius: 0 20px 20px 0; cursor: pointer; }
 .nav-links { display: flex; justify-content: center; gap: 30px; margin-top: 15px; font-size: 14px; font-weight: bold; }
 .nav-links a { color: #333; text-decoration: none; }
+
+/* 顶部用户操作区 */
+.user-actions { display: flex; gap: 20px; font-size: 14px; }
+.user-actions span { color: #333; transition: 0.2s; }
+.user-actions span:hover { color: #ee0a24; }
 
 .main-content { width: 1200px; margin: 20px auto; }
 .banner-section { margin-bottom: 20px; }
