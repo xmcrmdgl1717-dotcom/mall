@@ -34,7 +34,6 @@
           <span>用户管理</span>
         </el-menu-item>
 
-        <!-- 新增：商家管理 -->
         <el-menu-item index="/merchants">
           <el-icon><Shop /></el-icon>
           <span>商家管理</span>
@@ -45,7 +44,12 @@
           <span>轮播图管理</span>
         </el-menu-item>
 
-        <!-- 新增：系统管理下的角色权限 -->
+        <!-- 新增：优惠券管理 -->
+        <el-menu-item index="/coupons">
+          <el-icon><Ticket /></el-icon>
+          <span>优惠券管理</span>
+        </el-menu-item>
+
         <el-sub-menu index="system">
           <template #title>
             <el-icon><Setting /></el-icon>
@@ -71,7 +75,8 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { Odometer, Goods, List, User, Shop, Picture, Setting } from '@element-plus/icons-vue'
+// 确保引入了 Ticket 图标
+import { Odometer, Goods, List, User, Shop, Picture, Setting, Ticket } from '@element-plus/icons-vue'
 
 const router = useRouter()
 
