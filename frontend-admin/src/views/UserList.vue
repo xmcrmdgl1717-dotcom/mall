@@ -17,7 +17,10 @@
         </template>
       </el-table-column>
       <el-table-column prop="created_at" label="注册时间" width="200">
-         <template #default="scope">{{ new Date(scope.row.created_at).toLocaleString() }}</template>
+         <template #default="scope">
+           <!-- 防止空数据报错 -->
+           {{ scope.row.created_at ? new Date(scope.row.created_at).toLocaleString() : '-' }}
+         </template>
       </el-table-column>
       <el-table-column label="操作" width="150">
         <template #default>
@@ -25,8 +28,6 @@
         </template>
       </el-table-column>
     </el-table>
-    
-    <el-empty v-if="tableData.length === 0 && !loading" description="暂无买家用户" />
   </el-card>
 </template>
 
@@ -37,15 +38,36 @@ import { ElMessage } from 'element-plus'
 
 const loading = ref(false)
 const tableData = ref([])
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080/api/v1'
+// 确保这里的环境变量在 Render 配置了，或者用默认值
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://mall-api-13mx.onrender.com/api/v1' 
 
 const fetchUsers = async () => {
   loading.value = true
   try {
-    const res = await axios.get(`${API_BASE}/admin/users`)
+    // 获取 token
+    const token = localStorage.getItem('admin_token')
+    
+    // 发起请求，带上 Authorization 头
+    const res = await axios.get(`${API_BASE}/admin/users`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    
+    // 如果后端返回的数据在 data 字段里
     tableData.value = res.data.data || []
+    
+    // 如果数据是空的，给个友好提示
+    if (tableData.value.length === 0) {
+      ElMessage.info('目前还没有买家注册')
+    }
   } catch (error) {
-    ElMessage.error('获取用户失败')
+    console.error('请求失败详情:', error)
+    if (error.response && error.response.status === 401) {
+      ElMessage.error('登录已过期，请重新登录')
+    } else {
+      ElMessage.error(error.response?.data?.msg || '获取用户失败，请检查网络')
+    }
   } finally {
     loading.value = false
   }
