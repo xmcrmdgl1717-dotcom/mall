@@ -24,20 +24,25 @@
     </header>
 
     <main class="main-content">
-      <!-- 动态 Banner 轮播区 -->
+      <!-- 动态 Banner 轮播区 (带跳转) -->
       <div class="banner-section" v-if="bannerList.length > 0">
         <van-swipe class="my-swipe" :autoplay="3000" indicator-color="white" style="width: 100%; border-radius: 8px; height: 350px;">
-          <van-swipe-item v-for="item in bannerList" :key="item.id" @click="item.link_url && $router.push(item.link_url)">
+          <van-swipe-item 
+            v-for="item in bannerList" 
+            :key="item.id" 
+            @click="item.link_url && $router.push(item.link_url)"
+            :style="{ cursor: item.link_url ? 'pointer' : 'default' }"
+          >
             <img :src="item.image_url" style="width: 100%; height: 350px; object-fit: cover;" />
           </van-swipe-item>
         </van-swipe>
       </div>
-      <!-- 如果后台没配 Banner，显示占位图（防止页面塌陷） -->
+      <!-- 如果后台没配 Banner，显示占位图 -->
       <div class="banner-section" v-else>
-        <img src="https://picsum.photos/1200/350?grayscale" style="width: 100%; border-radius: 8px;" />
+        <img src="https://picsum.photos/1200/350?grayscale" style="width: 100%; border-radius: 8px; height: 350px; object-fit: cover;" />
       </div>
 
-      <!-- Shop by Category (动态拉取) -->
+      <!-- Shop by Category -->
       <section class="section">
         <div class="section-header">
           <h2>Shop by Category</h2>
@@ -48,7 +53,6 @@
             <div class="cat-icon"></div>
             <span>{{ c.name }}</span>
           </div>
-          <!-- 兜底展示（如果数据库还没加分类） -->
           <div class="category-item" v-if="categories.length === 0">
              <div class="cat-icon"></div>
              <span>暂无分类</span>
@@ -170,7 +174,6 @@ const popularStores = ref([])
 const categories = ref([])
 const bannerList = ref([])
 
-// 你的真实后端 API 地址
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://mall-api-l3mx.onrender.com/api/v1'
 
 onMounted(async () => {
@@ -196,7 +199,6 @@ onMounted(async () => {
     const storeRes = await getTopMerchants()
     popularStores.value = storeRes.data.data || []
     
-    // 兜底：如果没有每日特惠，就拿热门凑数防止页面空荡荡
     if (dailyDeals.value.length === 0) {
        dailyDeals.value = popularItems.value.slice(0, 5)
     }
