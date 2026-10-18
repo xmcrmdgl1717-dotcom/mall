@@ -1,1 +1,8 @@
+cd backend
+# 先确保本地有 go.sum
+go mod tidy
 
+# 强制添加（无视 .gitignore）
+git add -f go.sum go.mod
+git commit -m "fix: force add go.sum"
+git push origin main
