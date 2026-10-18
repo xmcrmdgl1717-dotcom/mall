@@ -10,6 +10,8 @@
 
     <div class="menu-section">
       <van-cell title="My Orders" is-link to="/orders" icon="orders-o" />
+      <van-cell title="Coupon Center" is-link to="/coupons" icon="coupon-o" />
+      <van-cell title="My Coupons" is-link to="/my-coupons" icon="gold-coin-o" />
       <van-cell title="My Addresses" is-link to="/addresses" icon="location-o" />
       <van-cell title="Customer Service" is-link icon="service-o" />
     </div>
