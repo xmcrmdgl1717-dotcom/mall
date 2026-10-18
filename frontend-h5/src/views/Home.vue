@@ -24,26 +24,34 @@
     </header>
 
     <main class="main-content">
-      <!-- Banner 区 -->
-      <div class="banner-section">
-        <div class="banner-left">
-          <img src="https://picsum.photos/800/350?grayscale" alt="Banner" />
-        </div>
-        <div class="banner-right">
-          <img src="https://picsum.photos/400/350" alt="Small Banner" />
-        </div>
+      <!-- 动态 Banner 轮播区 -->
+      <div class="banner-section" v-if="bannerList.length > 0">
+        <van-swipe class="my-swipe" :autoplay="3000" indicator-color="white" style="width: 100%; border-radius: 8px; height: 350px;">
+          <van-swipe-item v-for="item in bannerList" :key="item.id" @click="item.link_url && $router.push(item.link_url)">
+            <img :src="item.image_url" style="width: 100%; height: 350px; object-fit: cover;" />
+          </van-swipe-item>
+        </van-swipe>
+      </div>
+      <!-- 如果后台没配 Banner，显示占位图（防止页面塌陷） -->
+      <div class="banner-section" v-else>
+        <img src="https://picsum.photos/1200/350?grayscale" style="width: 100%; border-radius: 8px;" />
       </div>
 
-      <!-- Shop by Category -->
+      <!-- Shop by Category (动态拉取) -->
       <section class="section">
         <div class="section-header">
           <h2>Shop by Category</h2>
           <a href="#" class="view-all">View All ></a>
         </div>
         <div class="category-list">
-          <div class="category-item" v-for="i in 12" :key="i">
+          <div class="category-item" v-for="c in categories" :key="c.id" @click="$router.push('/products?category=' + c.id)">
             <div class="cat-icon"></div>
-            <span>Category {{ i }}</span>
+            <span>{{ c.name }}</span>
+          </div>
+          <!-- 兜底展示（如果数据库还没加分类） -->
+          <div class="category-item" v-if="categories.length === 0">
+             <div class="cat-icon"></div>
+             <span>暂无分类</span>
           </div>
         </div>
       </section>
@@ -150,6 +158,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import axios from 'axios'
 import { getProducts } from '../api/product'
 import { getCategories } from '../api/category'
 import { getTopMerchants } from '../api/merchant'
@@ -158,9 +167,23 @@ const dailyDeals = ref([])
 const popularItems = ref([])
 const hotDeals = ref([])
 const popularStores = ref([])
+const categories = ref([])
+const bannerList = ref([])
+
+// 你的真实后端 API 地址
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://mall-api-l3mx.onrender.com/api/v1'
 
 onMounted(async () => {
   try {
+    // 1. 获取动态 Banner
+    const bannerRes = await axios.get(`${API_BASE}/banners`)
+    bannerList.value = bannerRes.data.data || []
+
+    // 2. 获取动态分类
+    const catRes = await getCategories()
+    categories.value = catRes.data.data || []
+
+    // 3. 获取商品与店铺
     const dailyRes = await getProducts({ deal_type: 'daily', size: 10 })
     dailyDeals.value = dailyRes.data.data.list || []
 
@@ -173,11 +196,12 @@ onMounted(async () => {
     const storeRes = await getTopMerchants()
     popularStores.value = storeRes.data.data || []
     
+    // 兜底：如果没有每日特惠，就拿热门凑数防止页面空荡荡
     if (dailyDeals.value.length === 0) {
-       dailyDeals.value = Array(5).fill({ id: 1, title: 'YLTNEUQER Jade Roller Gua Sha Set', min_price: '5.62', total_sales: 1358, main_image: 'https://picsum.photos/200' })
+       dailyDeals.value = popularItems.value.slice(0, 5)
     }
   } catch (e) {
-    console.error(e)
+    console.error('首页数据加载失败', e)
   }
 })
 </script>
@@ -195,21 +219,17 @@ onMounted(async () => {
 .nav-links a { color: #333; text-decoration: none; }
 
 .main-content { width: 1200px; margin: 20px auto; }
-.banner-section { display: flex; gap: 10px; margin-bottom: 20px; }
-.banner-left { flex: 2; }
-.banner-left img { width: 100%; border-radius: 8px; display: block; }
-.banner-right { flex: 1; }
-.banner-right img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; display: block; }
+.banner-section { margin-bottom: 20px; }
 
 .section { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
 .section-header { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
 .section-header h2 { font-size: 18px; margin: 0; }
 .view-all { font-size: 12px; color: #666; text-decoration: none; }
 
-.category-list { display: flex; justify-content: space-between; text-align: center; }
-.category-item { flex: 1; }
+.category-list { display: flex; justify-content: flex-start; gap: 30px; text-align: center; overflow-x: auto; padding-bottom: 10px; }
+.category-item { flex: 0 0 80px; cursor: pointer; }
 .cat-icon { width: 50px; height: 50px; background: #eee; border-radius: 50%; margin: 0 auto 8px; }
-.category-item span { font-size: 12px; color: #333; }
+.category-item span { font-size: 12px; color: #333; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .product-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; }
 .product-card { border: 1px solid #f0f0f0; border-radius: 8px; padding: 10px; transition: 0.3s; display: flex; flex-direction: column; cursor: pointer; }
