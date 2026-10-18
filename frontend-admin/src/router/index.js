@@ -18,7 +18,9 @@ const routes = [
       { path: 'users', name: 'Users', component: () => import('../views/UserList.vue') },
       { path: 'merchants', name: 'Merchants', component: () => import('../views/MerchantList.vue') },
       { path: 'banners', name: 'Banners', component: () => import('../views/BannerList.vue') },
-      { path: 'roles', name: 'Roles', component: () => import('../views/RoleList.vue') }
+      { path: 'roles', name: 'Roles', component: () => import('../views/RoleList.vue') },
+      // 新增优惠券路由
+      { path: 'coupons', name: 'Coupons', component: () => import('../views/CouponList.vue') }
     ]
   }
 ]
