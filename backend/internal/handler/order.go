@@ -1,13 +1,21 @@
 package handler
 
 import (
+	"strconv"
+
 	"mall/backend/internal/pkg/response"
 	"mall/backend/internal/repository"
+
 	"github.com/gin-gonic/gin"
 )
 
-type OrderHandler struct { repo *repository.OrderRepo }
-func NewOrderHandler(repo *repository.OrderRepo) *OrderHandler { return &OrderHandler{repo: repo} }
+type OrderHandler struct {
+	repo *repository.OrderRepo
+}
+
+func NewOrderHandler(repo *repository.OrderRepo) *OrderHandler {
+	return &OrderHandler{repo: repo}
+}
 
 type CheckoutReq struct {
 	AddressName   string   `json:"address_name" binding:"required"`
@@ -23,7 +31,6 @@ func (h *OrderHandler) Create(c *gin.Context) {
 		return
 	}
 
-	// 暂时写死 UserID 为 1
 	order, err := h.repo.CreateOrder(repository.CreateOrderReq{
 		UserID:        1,
 		AddressName:   req.AddressName,
@@ -40,10 +47,27 @@ func (h *OrderHandler) Create(c *gin.Context) {
 }
 
 func (h *OrderHandler) List(c *gin.Context) {
-	list, err := h.repo.GetUserOrders(1) // 暂时写死 1
+	list, err := h.repo.GetUserOrders(1)
 	if err != nil {
 		response.Fail(c, 500, "查询失败")
 		return
 	}
 	response.OK(c, list)
+}
+
+// ================= 新增：发货操作 =================
+func (h *OrderHandler) ShipOrder(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		response.Fail(c, 400, "invalid order id")
+		return
+	}
+
+	// 假设状态 2 代表已发货
+	if err := h.repo.UpdateStatus(id, 2); err != nil {
+		response.Fail(c, 500, "发货失败")
+		return
+	}
+	response.OK(c, "发货成功")
 }
