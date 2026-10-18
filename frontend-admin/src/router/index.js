@@ -4,7 +4,6 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    // 这里先做个假的登录页占位，直接跳转到后台
     component: () => import('../views/Login.vue')
   },
   {
@@ -21,6 +20,16 @@ const routes = [
         path: 'products',
         name: 'Products',
         component: () => import('../views/ProductList.vue')
+      },
+      {
+        path: 'users', // 新增：买家管理
+        name: 'Users',
+        component: () => import('../views/UserList.vue')
+      },
+      {
+        path: 'orders', // 新增：订单管理 (后续做)
+        name: 'Orders',
+        component: () => import('../views/OrderList.vue')
       }
     ]
   }
@@ -31,7 +40,6 @@ const router = createRouter({
   routes
 })
 
-// 简单的路由守卫：如果没有 token 且不是去登录页，强制去登录
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('admin_token')
   if (to.name !== 'Login' && !token) {
