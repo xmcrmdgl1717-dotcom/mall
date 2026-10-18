@@ -52,3 +52,35 @@ func (h *ProductHandler) Detail(c *gin.Context) {
 	}
 	response.OK(c, product)
 }
+
+type CreateProductReq struct {
+	Title      string  `json:"title" binding:"required"`
+	MainImage  string  `json:"main_image"`
+	MinPrice   float64 `json:"min_price"`
+	CategoryID uint64  `json:"category_id"`
+}
+
+func (h *ProductHandler) Create(c *gin.Context) {
+	var req CreateProductReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Fail(c, 400, "参数错误")
+		return
+	}
+
+	// 组装商品数据
+	product := &model.Product{
+		Title:      req.Title,
+		MainImage:  req.MainImage,
+		MinPrice:   req.MinPrice,
+		MaxPrice:   req.MinPrice,
+		CategoryID: req.CategoryID,
+		MerchantID: 1, // 暂时写死为1号店
+		Status:     1, // 默认上架
+	}
+
+	if err := h.repo.Create(product); err != nil {
+		response.Fail(c, 500, "保存失败")
+		return
+	}
+	response.OK(c, product)
+}
