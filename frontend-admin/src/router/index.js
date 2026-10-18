@@ -13,10 +13,12 @@ const routes = [
     children: [
       { path: 'dashboard', name: 'Dashboard', component: () => import('../views/Dashboard.vue') },
       { path: 'products', name: 'Products', component: () => import('../views/ProductList.vue') },
-      { path: 'categories', name: 'Categories', component: () => import('../views/CategoryList.vue') }, // 👈 新增
+      { path: 'categories', name: 'Categories', component: () => import('../views/CategoryList.vue') },
       { path: 'orders', name: 'Orders', component: () => import('../views/OrderList.vue') },
       { path: 'users', name: 'Users', component: () => import('../views/UserList.vue') },
-      { path: 'banners', name: 'Banners', component: () => import('../views/BannerList.vue') } // 下一步用
+      { path: 'merchants', name: 'Merchants', component: () => import('../views/MerchantList.vue') },
+      { path: 'banners', name: 'Banners', component: () => import('../views/BannerList.vue') },
+      { path: 'roles', name: 'Roles', component: () => import('../views/RoleList.vue') }
     ]
   }
 ]
