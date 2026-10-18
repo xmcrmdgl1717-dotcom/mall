@@ -33,3 +33,19 @@ func (h *ProductHandler) List(c *gin.Context) {
 	}
 	response.OK(c, gin.H{"list": list, "total": total, "page": page, "size": size})
 }
+
+func (h *ProductHandler) Detail(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		response.Fail(c, 400, "invalid product id")
+		return
+	}
+
+	product, err := h.repo.GetByID(id)
+	if err != nil {
+		response.Fail(c, 404, "product not found")
+		return
+	}
+	response.OK(c, product)
+}
