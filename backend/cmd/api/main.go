@@ -14,7 +14,8 @@ func main() {
 		log.Fatal("db connect failed: ", err)
 	}
 
-	r := router.New(db)
+	// 把 cfg.Secret 传进去
+    r := router.New(db, cfg.Secret)
 	log.Printf("server start at :%s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {
 		log.Fatal(err)
