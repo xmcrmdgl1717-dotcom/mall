@@ -33,19 +33,25 @@
           <el-icon><User /></el-icon>
           <span>用户管理</span>
         </el-menu-item>
-        
+
+        <!-- 新增：商家管理 -->
+        <el-menu-item index="/merchants">
+          <el-icon><Shop /></el-icon>
+          <span>商家管理</span>
+        </el-menu-item>
+
         <el-menu-item index="/banners">
           <el-icon><Picture /></el-icon>
           <span>轮播图管理</span>
         </el-menu-item>
-        
+
+        <!-- 新增：系统管理下的角色权限 -->
         <el-sub-menu index="system">
           <template #title>
             <el-icon><Setting /></el-icon>
             <span>系统管理</span>
           </template>
           <el-menu-item index="/roles">角色权限</el-menu-item>
-          <el-menu-item index="/settings">系统设置</el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-aside>
@@ -65,6 +71,8 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
+import { Odometer, Goods, List, User, Shop, Picture, Setting } from '@element-plus/icons-vue'
+
 const router = useRouter()
 
 const logout = () => {
