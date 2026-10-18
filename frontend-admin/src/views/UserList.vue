@@ -1,6 +1,7 @@
 <template>
   <el-card>
-    <div style="margin-bottom: 20px;">
+    <div style="margin-bottom: 20px; display: flex; justify-content: space-between;">
+      <h3>买家用户管理</h3>
       <el-button type="primary" @click="fetchUsers">刷新列表</el-button>
     </div>
     
@@ -24,6 +25,8 @@
         </template>
       </el-table-column>
     </el-table>
+    
+    <el-empty v-if="tableData.length === 0 && !loading" description="暂无买家用户" />
   </el-card>
 </template>
 
