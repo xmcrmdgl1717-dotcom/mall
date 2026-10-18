@@ -24,11 +24,13 @@ func (h *ProductHandler) List(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	size, _ := strconv.Atoi(c.DefaultQuery("size", "20"))
 	dealType := c.Query("deal_type")
+	keyword := c.Query("keyword") // 接收前端传来的搜索词
 	
 	if page < 1 { page = 1 }
 	if size < 1 || size > 100 { size = 20 }
 
-	list, total, err := h.repo.List(categoryID, c.Query("sort"), page, size, dealType)
+	// 传入 keyword
+	list, total, err := h.repo.List(categoryID, c.Query("sort"), page, size, dealType, keyword)
 	if err != nil {
 		response.Fail(c, 500, "query failed")
 		return
@@ -53,7 +55,7 @@ func (h *ProductHandler) Detail(c *gin.Context) {
 	response.OK(c, product)
 }
 
-// ================= 新增：支持 SKU 的商品发布 =================
+// ================= 支持 SKU 的商品发布 =================
 
 type SkuReq struct {
 	Specs string  `json:"specs"`
@@ -75,7 +77,6 @@ func (h *ProductHandler) Create(c *gin.Context) {
 		return
 	}
 
-	// 组装 SKU 数组
 	var skus []model.ProductSku
 	for _, s := range req.Skus {
 		skus = append(skus, model.ProductSku{
@@ -89,8 +90,8 @@ func (h *ProductHandler) Create(c *gin.Context) {
 		Title:      req.Title,
 		MainImage:  req.MainImage,
 		CategoryID: req.CategoryID,
-		MerchantID: 1, // 暂时写死
-		Status:     1, // 默认上架
+		MerchantID: 1,
+		Status:     1,
 		Skus:       skus, 
 	}
 
