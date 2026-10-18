@@ -109,13 +109,13 @@
         </div>
       </section>
 
-      <!-- Popular Stores -->
+      <!-- Popular Stores (带点击跳转和鼠标手势) -->
       <section class="section">
         <div class="section-header">
           <h2>Popular Stores</h2>
         </div>
         <div class="store-grid">
-          <div class="store-card" v-for="s in popularStores" :key="s.id">
+          <div class="store-card" v-for="s in popularStores" :key="s.id" @click="$router.push('/store/' + s.id)">
             <div class="s-header">
               <div class="s-avatar"></div>
               <div class="s-name">{{ s.name }}</div>
@@ -178,15 +178,12 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'https://mall-api-l3mx.onrende
 
 onMounted(async () => {
   try {
-    // 1. 获取动态 Banner
     const bannerRes = await axios.get(`${API_BASE}/banners`)
     bannerList.value = bannerRes.data.data || []
 
-    // 2. 获取动态分类
     const catRes = await getCategories()
     categories.value = catRes.data.data || []
 
-    // 3. 获取商品与店铺
     const dailyRes = await getProducts({ deal_type: 'daily', size: 10 })
     dailyDeals.value = dailyRes.data.data.list || []
 
@@ -247,12 +244,13 @@ onMounted(async () => {
 .join-btn { background: #333; color: #fff; border: none; padding: 10px 30px; border-radius: 20px; margin-top: 10px; cursor: pointer; }
 
 .store-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-.store-card { border: 1px solid #eee; padding: 15px; border-radius: 8px; }
+.store-card { border: 1px solid #eee; padding: 15px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+.store-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 .s-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .s-avatar { width: 40px; height: 40px; border-radius: 50%; background: #ddd; }
 .s-name { font-weight: bold; }
 .s-stats p { font-size: 12px; color: #666; margin: 4px 0; }
-.visit-btn { width: 100%; border: 1px solid #333; background: #fff; padding: 8px; border-radius: 20px; cursor: pointer; }
+.visit-btn { width: 100%; border: 1px solid #333; background: #fff; padding: 8px; border-radius: 20px; cursor: pointer; margin-top: 10px; }
 
 .footer-trust { display: flex; justify-content: space-around; background: #fff; padding: 30px 0; border-radius: 8px; }
 .footer-trust div { text-align: center; font-size: 14px; font-weight: bold; }
