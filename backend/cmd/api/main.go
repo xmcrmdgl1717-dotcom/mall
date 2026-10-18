@@ -16,7 +16,7 @@ func main() {
 		log.Fatal("db connect failed: ", err)
 	}
 
-	// 自动迁移建表 (新增了 Banner)
+	// 自动迁移建表
 	err = db.AutoMigrate(
 		&model.Category{},
 		&model.Product{},
@@ -28,7 +28,10 @@ func main() {
 		&model.OrderItem{},
 		&model.Role{},
 		&model.User{},
-		&model.Banner{}, // 👈 新增
+		&model.Banner{},
+		&model.Address{},
+		&model.Coupon{},     // 新增：优惠券表
+		&model.UserCoupon{}, // 新增：用户领券记录表
 	)
 	if err != nil {
 		log.Println("AutoMigrate failed:", err)
