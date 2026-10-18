@@ -3,7 +3,7 @@
     <div style="margin-bottom: 20px; display: flex; justify-content: space-between;">
       <h3>商品管理</h3>
       <div>
-        <el-button type="primary" @click="openDialog">+ 发布新商品 (带SKU)</el-button>
+        <el-button type="primary" @click="openDialog">+ 发布新商品</el-button>
         <el-button @click="fetchData">刷新列表</el-button>
       </div>
     </div>
@@ -20,28 +20,29 @@
         <template #default="scope"><span style="color:#f56c6c">$ {{ scope.row.min_price }}</span></template>
       </el-table-column>
       <el-table-column prop="total_sales" label="销量" width="100" />
-      <el-table-column label="状态" width="100">
-        <template #default="scope">
-          <el-tag :type="scope.row.status === 1 ? 'success' : 'info'">{{ scope.row.status === 1 ? '上架中' : '已下架' }}</el-tag>
-        </template>
-      </el-table-column>
     </el-table>
 
-    <!-- 复杂的发布商品弹窗 -->
     <el-dialog v-model="dialogVisible" title="发布新商品" width="700px">
       <el-form :model="form" label-width="100px">
         <el-form-item label="商品标题" required>
           <el-input v-model="form.title" placeholder="请输入商品标题" />
         </el-form-item>
+        
+        <!-- 新增：动态选择类目 -->
+        <el-form-item label="所属类目" required>
+          <el-select v-model="form.category_id" placeholder="请选择类目" style="width: 100%;">
+            <el-option v-for="cat in categories" :key="cat.id" :label="cat.name" :value="cat.id" />
+          </el-select>
+        </el-form-item>
+
         <el-form-item label="主图链接">
           <el-input v-model="form.main_image" placeholder="https://..." />
         </el-form-item>
         
         <el-divider content-position="left">商品规格 (SKU)</el-divider>
         
-        <!-- 动态 SKU 列表 -->
         <div v-for="(sku, index) in form.skus" :key="index" class="sku-row">
-          <el-input v-model="sku.specs" placeholder="规格 (如: 红色 / 尺寸M)" style="width: 200px; margin-right: 10px;" />
+          <el-input v-model="sku.specs" placeholder="规格 (如: 红色)" style="width: 200px; margin-right: 10px;" />
           <el-input-number v-model="sku.price" :min="0" :precision="2" placeholder="价格" style="width: 150px; margin-right: 10px;" />
           <el-input-number v-model="sku.stock" :min="0" placeholder="库存" style="width: 150px; margin-right: 10px;" />
           <el-button type="danger" icon="Delete" circle @click="removeSku(index)" />
@@ -66,21 +67,16 @@ import { ElMessage } from 'element-plus'
 const loading = ref(false)
 const submitting = ref(false)
 const tableData = ref([])
+const categories = ref([]) // 存储类目列表
 const dialogVisible = ref(false)
-const API_BASE = import.meta.env.VITE_API_BASE
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://mall-api-l3mx.onrender.com/api/v1'
 
 const form = reactive({
   title: '',
+  category_id: null,
   main_image: 'https://picsum.photos/400',
-  skus: [{ specs: '默认规格', price: 9.99, stock: 100 }] // 默认给一条
+  skus: [{ specs: '默认规格', price: 9.99, stock: 100 }]
 })
-
-const addSku = () => {
-  form.skus.push({ specs: '', price: 0, stock: 0 })
-}
-const removeSku = (index) => {
-  form.skus.splice(index, 1)
-}
 
 const fetchData = async () => {
   loading.value = true
@@ -88,14 +84,28 @@ const fetchData = async () => {
     const res = await axios.get(`${API_BASE}/products`)
     tableData.value = res.data.data.list || []
   } catch (error) {
-    ElMessage.error('获取数据失败')
+    ElMessage.error('获取商品失败')
   } finally {
     loading.value = false
   }
 }
 
+// 拉取分类数据
+const fetchCategories = async () => {
+  try {
+    const res = await axios.get(`${API_BASE}/categories`)
+    categories.value = res.data.data || []
+  } catch (error) {
+    console.error('获取类目失败')
+  }
+}
+
+const addSku = () => { form.skus.push({ specs: '', price: 0, stock: 0 }) }
+const removeSku = (index) => { form.skus.splice(index, 1) }
+
 const openDialog = () => {
   form.title = ''
+  form.category_id = categories.value.length > 0 ? categories.value[0].id : null
   form.main_image = 'https://picsum.photos/400'
   form.skus = [{ specs: '默认规格', price: 9.99, stock: 100 }]
   dialogVisible.value = true
@@ -103,6 +113,7 @@ const openDialog = () => {
 
 const submitForm = async () => {
   if (!form.title) return ElMessage.warning('请输入标题')
+  if (!form.category_id) return ElMessage.warning('请选择类目')
   if (form.skus.length === 0) return ElMessage.warning('至少添加一个规格')
   
   submitting.value = true
@@ -118,7 +129,10 @@ const submitForm = async () => {
   }
 }
 
-onMounted(() => { fetchData() })
+onMounted(() => { 
+  fetchData()
+  fetchCategories()
+})
 </script>
 
 <style scoped>
