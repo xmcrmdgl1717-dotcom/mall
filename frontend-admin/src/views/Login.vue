@@ -18,17 +18,24 @@
 <script setup>
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
-const form = reactive({ username: '', password: '' })
+const form = reactive({ username: 'admin', password: 'admin123' }) // 默认填好方便测试
 
-const login = () => {
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080/api/v1'
+
+const login = async () => {
   if (!form.username || !form.password) return ElMessage.warning('请输入账号密码')
-  // 模拟登录成功，写入 token
-  localStorage.setItem('admin_token', 'fake-token-123')
-  ElMessage.success('登录成功')
-  router.push('/dashboard')
+  try {
+    const res = await axios.post(`${API_BASE}/admin/login`, form)
+    localStorage.setItem('admin_token', res.data.data.token)
+    ElMessage.success('登录成功')
+    router.push('/dashboard')
+  } catch (error) {
+    ElMessage.error(error.response?.data?.msg || '登录失败')
+  }
 }
 </script>
 
