@@ -39,7 +39,6 @@ const router = createRouter({
       name: 'StoreDetail',
       component: () => import('../views/StoreDetail.vue')
     },
-    // 👇 新增：个人中心与地址管理
     {
       path: '/user',
       name: 'UserCenter',
@@ -49,6 +48,17 @@ const router = createRouter({
       path: '/addresses',
       name: 'AddressList',
       component: () => import('../views/AddressList.vue')
+    },
+    // 新增优惠券路由
+    {
+      path: '/coupons',
+      name: 'CouponCenter',
+      component: () => import('../views/CouponCenter.vue')
+    },
+    {
+      path: '/my-coupons',
+      name: 'MyCoupons',
+      component: () => import('../views/MyCoupons.vue')
     }
   ]
 })
