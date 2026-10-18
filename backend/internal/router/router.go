@@ -23,6 +23,10 @@ func New(db *gorm.DB, secret string) *gin.Engine {
 		MaxAge:           12 * time.Hour,
 	}))
 
+	// 开启静态文件服务，让外界可以访问 /uploads/xxx.jpg
+	r.Static("/uploads", "./uploads")
+
+	// 初始化所有 Handler
 	categoryHandler := handler.NewCategoryHandler(repository.NewCategoryRepo(db))
 	dashboardHandler := handler.NewDashboardHandler(repository.NewDashboardRepo(db))
 	productHandler := handler.NewProductHandler(repository.NewProductRepo(db))
@@ -31,18 +35,22 @@ func New(db *gorm.DB, secret string) *gin.Engine {
 	orderHandler := handler.NewOrderHandler(repository.NewOrderRepo(db))
 	authHandler := handler.NewAuthHandler(db, secret)
 	userHandler := handler.NewUserHandler(db)
-	bannerHandler := handler.NewBannerHandler(repository.NewBannerRepo(db)) // 下一步用
+	bannerHandler := handler.NewBannerHandler(repository.NewBannerRepo(db))
+	uploadHandler := handler.NewUploadHandler() // 新增
 
 	api := r.Group("/api/v1")
 	{
 		api.POST("/admin/login", authHandler.Login)
 		api.GET("/admin/users", userHandler.GetBuyers)
 		
+		// 图片上传接口
+		api.POST("/admin/upload", uploadHandler.UploadImage)
+
 		// 看板与类目
 		api.GET("/admin/dashboard", dashboardHandler.GetStats)
 		api.POST("/admin/categories", categoryHandler.Create)
 		api.DELETE("/admin/categories/:id", categoryHandler.Delete)
-		api.GET("/categories", categoryHandler.List) // 前台也要用，顺便放出来
+		api.GET("/categories", categoryHandler.List)
 
 		// 商品
 		api.GET("/products", productHandler.List)
