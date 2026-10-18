@@ -21,17 +21,12 @@ func (h *ProductHandler) List(c *gin.Context) {
 	categoryID, _ := strconv.ParseUint(c.DefaultQuery("category_id", "0"), 10, 64)
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	size, _ := strconv.Atoi(c.DefaultQuery("size", "20"))
+	dealType := c.Query("deal_type") // 新增：daily 或 hot
 	
-	if page < 1 {
-		page = 1
-	}
-	if size < 1 || size > 100 {
-		size = 20
-	}
+	if page < 1 { page = 1 }
+	if size < 1 || size > 100 { size = 20 }
 
-	// 这一行是修复的关键，必须这样写
-	list, total, err := h.repo.List(categoryID, c.Query("sort"), page, size)
-	
+	list, total, err := h.repo.List(categoryID, c.Query("sort"), page, size, dealType)
 	if err != nil {
 		response.Fail(c, 500, "query failed")
 		return
