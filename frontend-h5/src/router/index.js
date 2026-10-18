@@ -8,14 +8,15 @@ const router = createRouter({
       path: '/',
       name: 'Home',
       component: Home
-      
-    }
- 
-    {
-  path: '/product/:id',
+     
+        path: '/product/:id',
   name: 'ProductDetail',
   component: () => import('../views/ProductDetail.vue')
-    } 
+    }
+
+    
+ 
+    
   ]
 })
 
