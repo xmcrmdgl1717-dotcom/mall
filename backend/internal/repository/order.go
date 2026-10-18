@@ -25,12 +25,11 @@ type CreateOrderReq struct {
 	CartIDs       []uint64
 }
 
-// CreateOrder 创建订单（核心逻辑：事务处理、扣库存、生成订单、删购物车）
+// CreateOrder 创建订单
 func (r *OrderRepo) CreateOrder(req CreateOrderReq) (*model.Order, error) {
 	var newOrder *model.Order
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		// 1. 查出要结算的购物车商品
 		var carts []model.Cart
 		if err := tx.Preload("Product").Preload("Sku").Where("id IN ? AND user_id = ?", req.CartIDs, req.UserID).Find(&carts).Error; err != nil {
 			return err
@@ -42,9 +41,7 @@ func (r *OrderRepo) CreateOrder(req CreateOrderReq) (*model.Order, error) {
 		var totalAmount float64
 		var orderItems []model.OrderItem
 
-		// 2. 遍历商品，扣减库存，计算总价，组装订单明细
 		for _, cart := range carts {
-			// 使用 gorm.Expr 实现原子扣减库存，并判断库存是否充足 (stock >= quantity)
 			res := tx.Model(&model.ProductSku{}).
 				Where("id = ? AND stock >= ?", cart.SkuID, cart.Quantity).
 				Update("stock", gorm.Expr("stock - ?", cart.Quantity))
@@ -67,12 +64,11 @@ func (r *OrderRepo) CreateOrder(req CreateOrderReq) (*model.Order, error) {
 			})
 		}
 
-		// 3. 生成订单记录
 		order := &model.Order{
-			OrderNo:       "ORD" + time.Now().Format("20060102150405"), // 简单生成订单号
+			OrderNo:       "ORD" + time.Now().Format("20060102150405"),
 			UserID:        req.UserID,
 			TotalAmount:   totalAmount,
-			Status:        1, // 假设直接支付成功，状态置为已付款
+			Status:        1, // 1 代表待发货
 			AddressName:   req.AddressName,
 			AddressPhone:  req.AddressPhone,
 			AddressDetail: req.AddressDetail,
@@ -83,7 +79,6 @@ func (r *OrderRepo) CreateOrder(req CreateOrderReq) (*model.Order, error) {
 			return err
 		}
 
-		// 4. 删除已结算的购物车记录
 		if err := tx.Where("id IN ?", req.CartIDs).Delete(&model.Cart{}).Error; err != nil {
 			return err
 		}
@@ -100,4 +95,9 @@ func (r *OrderRepo) GetUserOrders(userID uint64) ([]model.Order, error) {
 	var list []model.Order
 	err := r.db.Preload("Items").Where("user_id = ?", userID).Order("created_at DESC").Find(&list).Error
 	return list, err
+}
+
+// ================= 新增：更新订单状态 =================
+func (r *OrderRepo) UpdateStatus(orderID uint64, status int8) error {
+	return r.db.Model(&model.Order{}).Where("id = ?", orderID).Update("status", status).Error
 }
