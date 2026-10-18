@@ -13,6 +13,12 @@ type ProductRepo struct {
 func NewProductRepo(db *gorm.DB) *ProductRepo {
 	return &ProductRepo{db: db}
 }
+func (r *ProductRepo) GetByID(id uint64) (*model.Product, error) {
+	var product model.Product
+	// Preload 会去查 product_sku 表并组装到 Skus 字段
+	err := r.db.Preload("Skus").First(&product, id).Error
+	return &product, err
+}
 
 func (r *ProductRepo) List(categoryID uint64, sort string, page, size int) ([]model.Product, int64, error) {
 	q := r.db.Model(&model.Product{}).Where("status = ?", 1)
