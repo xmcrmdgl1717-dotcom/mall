@@ -22,7 +22,6 @@ func (r *ProductRepo) List(categoryID uint64, sort string, page, size int, dealT
 		q = q.Where("category_id = ?", categoryID)
 	}
 
-	// 新增的判断：如果是特惠商品
 	if dealType == "daily" {
 		q = q.Where("is_daily_deal = 1")
 	} else if dealType == "hot" {
@@ -56,6 +55,26 @@ func (r *ProductRepo) GetByID(id uint64) (*model.Product, error) {
 	return &product, err
 }
 
+// Create 支持带有 SKU 的商品创建（使用数据库事务）
 func (r *ProductRepo) Create(product *model.Product) error {
-	return r.db.Create(product).Error
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		// 1. 默认计算一下价格区间（取 SKU 里的最大和最小值）
+		if len(product.Skus) > 0 {
+			minPrice := product.Skus[0].Price
+			maxPrice := product.Skus[0].Price
+			for _, sku := range product.Skus {
+				if sku.Price < minPrice { minPrice = sku.Price }
+				if sku.Price > maxPrice { maxPrice = sku.Price }
+			}
+			product.MinPrice = minPrice
+			product.MaxPrice = maxPrice
+		}
+
+		// 2. 创建主商品 SPU (GORM 会级联保存 Skus)
+		if err := tx.Create(product).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
