@@ -40,6 +40,10 @@ func New(db *gorm.DB, secret string) *gin.Engine {
 
 	api := r.Group("/api/v1")
 	{
+				// 商家管理 (后台)
+		api.GET("/admin/merchants", merchantHandler.ListAll)
+		api.PUT("/admin/merchants/:id/status", merchantHandler.UpdateStatus)
+		
 		api.POST("/admin/login", authHandler.Login)
 		api.GET("/admin/users", userHandler.GetBuyers)
 		
