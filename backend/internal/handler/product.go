@@ -3,7 +3,7 @@ package handler
 import (
 	"strconv"
 
-	"mall/backend/internal/model"       // 👈 就是缺了这一行
+	"mall/backend/internal/model"
 	"mall/backend/internal/pkg/response"
 	"mall/backend/internal/repository"
 
@@ -53,34 +53,49 @@ func (h *ProductHandler) Detail(c *gin.Context) {
 	response.OK(c, product)
 }
 
-// Create 新增商品
+// ================= 新增：支持 SKU 的商品发布 =================
+
+type SkuReq struct {
+	Specs string  `json:"specs"`
+	Price float64 `json:"price"`
+	Stock int     `json:"stock"`
+}
+
 type CreateProductReq struct {
-	Title      string  `json:"title" binding:"required"`
-	MainImage  string  `json:"main_image"`
-	MinPrice   float64 `json:"min_price"`
-	CategoryID uint64  `json:"category_id"`
+	Title      string   `json:"title" binding:"required"`
+	MainImage  string   `json:"main_image"`
+	CategoryID uint64   `json:"category_id"`
+	Skus       []SkuReq `json:"skus" binding:"required"` 
 }
 
 func (h *ProductHandler) Create(c *gin.Context) {
 	var req CreateProductReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Fail(c, 400, "参数错误")
+		response.Fail(c, 400, "参数错误: "+err.Error())
 		return
 	}
 
-	// 这里用到了 model，如果没有 import 就会报刚才那个错
+	// 组装 SKU 数组
+	var skus []model.ProductSku
+	for _, s := range req.Skus {
+		skus = append(skus, model.ProductSku{
+			Specs: s.Specs,
+			Price: s.Price,
+			Stock: s.Stock,
+		})
+	}
+
 	product := &model.Product{
 		Title:      req.Title,
 		MainImage:  req.MainImage,
-		MinPrice:   req.MinPrice,
-		MaxPrice:   req.MinPrice,
 		CategoryID: req.CategoryID,
 		MerchantID: 1, // 暂时写死
 		Status:     1, // 默认上架
+		Skus:       skus, 
 	}
 
 	if err := h.repo.Create(product); err != nil {
-		response.Fail(c, 500, "保存失败")
+		response.Fail(c, 500, "保存失败: "+err.Error())
 		return
 	}
 	response.OK(c, product)
