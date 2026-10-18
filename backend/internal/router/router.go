@@ -23,40 +23,47 @@ func New(db *gorm.DB, secret string) *gin.Engine {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	// 初始化所有 Handler
-	productHandler := handler.NewProductHandler(repository.NewProductRepo(db))
 	categoryHandler := handler.NewCategoryHandler(repository.NewCategoryRepo(db))
+	dashboardHandler := handler.NewDashboardHandler(repository.NewDashboardRepo(db))
+	productHandler := handler.NewProductHandler(repository.NewProductRepo(db))
 	merchantHandler := handler.NewMerchantHandler(repository.NewMerchantRepo(db))
 	cartHandler := handler.NewCartHandler(repository.NewCartRepo(db))
 	orderHandler := handler.NewOrderHandler(repository.NewOrderRepo(db))
 	authHandler := handler.NewAuthHandler(db, secret)
 	userHandler := handler.NewUserHandler(db)
+	bannerHandler := handler.NewBannerHandler(repository.NewBannerRepo(db)) // 下一步用
 
-	// 注册路由组
 	api := r.Group("/api/v1")
 	{
-		// 登录与用户
 		api.POST("/admin/login", authHandler.Login)
 		api.GET("/admin/users", userHandler.GetBuyers)
+		
+		// 看板与类目
+		api.GET("/admin/dashboard", dashboardHandler.GetStats)
+		api.POST("/admin/categories", categoryHandler.Create)
+		api.DELETE("/admin/categories/:id", categoryHandler.Delete)
+		api.GET("/categories", categoryHandler.List) // 前台也要用，顺便放出来
 
 		// 商品
 		api.GET("/products", productHandler.List)
 		api.GET("/products/:id", productHandler.Detail)
 		api.POST("/products", productHandler.Create)
 
-		// 类目与店铺
-		api.GET("/categories", categoryHandler.List)
 		api.GET("/merchants/top", merchantHandler.ListTop)
 
-		// 购物车
+		// 购物车与订单
 		api.GET("/cart", cartHandler.List)
 		api.POST("/cart", cartHandler.Add)
 		api.DELETE("/cart/:id", cartHandler.Delete)
-
-		// 订单
 		api.POST("/orders", orderHandler.Create)
 		api.GET("/orders", orderHandler.List)
-		api.PUT("/orders/:id/ship", orderHandler.ShipOrder) // 👈 新增发货路由
+		api.PUT("/orders/:id/ship", orderHandler.ShipOrder)
+		
+		// 新增 Banner 路由
+		api.GET("/banners", bannerHandler.ListActive)
+		api.GET("/admin/banners", bannerHandler.ListAll)
+		api.POST("/admin/banners", bannerHandler.Create)
+		api.DELETE("/admin/banners/:id", bannerHandler.Delete)
 	}
 	
 	return r
