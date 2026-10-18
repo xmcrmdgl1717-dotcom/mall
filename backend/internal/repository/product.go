@@ -55,3 +55,7 @@ func (r *ProductRepo) GetByID(id uint64) (*model.Product, error) {
 	err := r.db.Preload("Skus").First(&product, id).Error
 	return &product, err
 }
+
+func (r *ProductRepo) Create(product *model.Product) error {
+	return r.db.Create(product).Error
+}
