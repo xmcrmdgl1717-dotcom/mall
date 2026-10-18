@@ -28,7 +28,8 @@ api.GET("/merchants/top", merchantHandler.ListTop)
 	api := r.Group("/api/v1")
 	{
 		api.GET("/products", productHandler.List)
-		api.GET("/categories", categoryHandler.List) // 新增接口
+        api.GET("/products/:id", productHandler.Detail) // 新增详情接口
+        api.GET("/categories", categoryHandler.List)
 	}
 	return r
 }
