@@ -27,7 +27,7 @@ func (h *ProductHandler) List(c *gin.Context) {
 	if page < 1 { page = 1 }
 	if size < 1 || size > 100 { size = 20 }
 
-	// 重点修复：这里要传 5 个参数，顺序依次是 categoryID, sort, page, size, dealType
+	// 这里必须传 5 个参数
 	list, total, err := h.repo.List(categoryID, c.Query("sort"), page, size, dealType)
 	if err != nil {
 		response.Fail(c, 500, "query failed")
