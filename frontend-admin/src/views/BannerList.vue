@@ -24,13 +24,28 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog v-model="dialogVisible" title="添加轮播图" width="500px">
+    <el-dialog v-model="dialogVisible" title="添加轮播图" width="600px">
       <el-form :model="form" label-width="100px">
-        <el-form-item label="图片链接" required>
-          <el-input v-model="form.image_url" placeholder="输入图片 URL (如 https://picsum.photos/800/350)" />
+        
+        <!-- 改造点：本地图片上传 -->
+        <el-form-item label="图片上传" required>
+          <el-upload
+            class="upload-demo"
+            :action="`${API_BASE}/admin/upload`"
+            :show-file-list="false"
+            :on-success="handleBannerUploadSuccess"
+            :before-upload="beforeUpload"
+          >
+            <el-button type="primary">点击上传本地图片</el-button>
+          </el-upload>
+          <div style="font-size: 12px; color: #999; margin-top: 5px;">或者手动填入在线链接：</div>
+          <el-input v-model="form.image_url" placeholder="https://..." style="margin-top: 5px;" />
+          <!-- 预览区域 -->
+          <el-image v-if="form.image_url" :src="form.image_url" style="width: 100%; height: 150px; margin-top: 10px; border-radius: 8px;" fit="cover" />
         </el-form-item>
+
         <el-form-item label="跳转链接">
-          <el-input v-model="form.link_url" placeholder="如 /product/1" />
+          <el-input v-model="form.link_url" placeholder="如 /product/1 (商品详情页)" />
         </el-form-item>
         <el-form-item label="排序权重">
           <el-input-number v-model="form.sort" :min="1" />
@@ -56,7 +71,33 @@ const dialogVisible = ref(false)
 
 const form = reactive({ image_url: '', link_url: '', sort: 1 })
 
+// 上传前校验
+const beforeUpload = (file) => {
+  const isImage = file.type.startsWith('image/')
+  if (!isImage) {
+    ElMessage.error('只能上传图片文件!')
+    return false
+  }
+  const isLt2M = file.size / 1024 / 1024 < 2
+  if (!isLt2M) {
+    ElMessage.error('图片大小不能超过 2MB!')
+    return false
+  }
+  return true
+}
+
+// 上传成功回调
+const handleBannerUploadSuccess = (res) => {
+  if (res.code === 0) {
+    form.image_url = res.data.url // 后端返回的 URL
+    ElMessage.success('图片上传成功')
+  } else {
+    ElMessage.error(res.msg || '上传失败')
+  }
+}
+
 const fetchData = async () => {
+  // ... 保持原有逻辑
   loading.value = true
   try {
     const res = await axios.get(`${API_BASE}/admin/banners`)
@@ -69,14 +110,14 @@ const fetchData = async () => {
 }
 
 const openDialog = () => {
-  form.image_url = 'https://picsum.photos/800/350'
+  form.image_url = ''
   form.link_url = ''
   form.sort = 1
   dialogVisible.value = true
 }
 
 const submitForm = async () => {
-  if (!form.image_url) return ElMessage.warning('请输入图片链接')
+  if (!form.image_url) return ElMessage.warning('请上传图片或填入图片链接')
   try {
     await axios.post(`${API_BASE}/admin/banners`, form)
     ElMessage.success('添加成功')
