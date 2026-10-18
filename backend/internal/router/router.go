@@ -11,8 +11,27 @@ import (
 	"gorm.io/gorm"
 )
 
-func New(db *gorm.DB) *gin.Engine {
+func New(db *gorm.DB, secret string) *gin.Engine {
 	r := gin.Default()
+	// ... CORS 代码保持不变 ...
+
+	// ... 原有的 Repo 初始化 ...
+
+	// 初始化新增的 Handler
+	authHandler := handler.NewAuthHandler(db, secret)
+
+	api := r.Group("/api/v1")
+	{
+		api.POST("/admin/login", authHandler.Login) // 登录接口
+		
+		// 其他原有接口...
+		api.GET("/products", productHandler.List)
+		api.GET("/products/:id", productHandler.Detail)
+		api.POST("/products", productHandler.Create) // 新增商品接口
+		// ...
+	}
+	return r
+}
 
 	// 配置跨域
 	r.Use(cors.New(cors.Config{
