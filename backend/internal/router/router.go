@@ -13,23 +13,35 @@ import (
 
 func New(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
-	// ... CORS 代码保持不变 ...
 
+	// 配置跨域
+	r.Use(cors.New(cors.Config{
+		AllowAllOrigins:  true,
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
+	// 初始化 Repo
 	productRepo := repository.NewProductRepo(db)
-	productHandler := handler.NewProductHandler(productRepo)
-	
 	categoryRepo := repository.NewCategoryRepo(db)
-	categoryHandler := handler.NewCategoryHandler(categoryRepo)
-   // 在已有的路由组里加上：
-    merchantRepo := repository.NewMerchantRepo(db)
-    merchantHandler := handler.NewMerchantHandler(merchantRepo)
+	merchantRepo := repository.NewMerchantRepo(db)
 
-api.GET("/merchants/top", merchantHandler.ListTop)
+	// 初始化 Handler
+	productHandler := handler.NewProductHandler(productRepo)
+	categoryHandler := handler.NewCategoryHandler(categoryRepo)
+	merchantHandler := handler.NewMerchantHandler(merchantRepo)
+
+	// 注册路由
 	api := r.Group("/api/v1")
 	{
 		api.GET("/products", productHandler.List)
-        api.GET("/products/:id", productHandler.Detail) // 新增详情接口
-        api.GET("/categories", categoryHandler.List)
+		api.GET("/products/:id", productHandler.Detail)
+		api.GET("/categories", categoryHandler.List)
+		api.GET("/merchants/top", merchantHandler.ListTop)
 	}
+	
 	return r
 }
