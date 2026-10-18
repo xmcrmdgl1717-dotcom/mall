@@ -16,7 +16,6 @@
         <van-swipe-item>
           <img :src="product.main_image" alt="main" />
         </van-swipe-item>
-        <!-- 如果有副图，可以在这里循环渲染 -->
       </van-swipe>
     </div>
 
@@ -70,8 +69,9 @@
     <!-- 底部悬浮操作栏 -->
     <van-action-bar>
       <van-action-bar-icon icon="chat-o" text="Chat" />
+      <!-- 点击跳转购物车 -->
       <van-action-bar-icon icon="cart-o" text="Cart" @click="$router.push('/cart')" />
-      <van-action-bar-button type="warning" text="Add to Cart" @click="addToCart" />
+      <van-action-bar-button type="warning" text="Add to Cart" @click="addToCartAction" />
       <van-action-bar-button type="danger" text="Buy Now" @click="buyNow" />
     </van-action-bar>
   </div>
@@ -81,6 +81,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getProductDetail } from '../api/product'
+import { addToCart } from '../api/cart' // 引入购物车 API
 import { showToast } from 'vant'
 
 const route = useRoute()
@@ -88,7 +89,8 @@ const router = useRouter()
 const product = ref(null)
 const selectedSku = ref(null)
 
-// 计算当前显示的价格
+const selectedSkuId = computed(() => selectedSku.value ? selectedSku.value.id : null)
+
 const currentPrice = computed(() => {
   if (selectedSku.value) return selectedSku.value.price
   return product.value ? product.value.min_price : 0
@@ -113,19 +115,28 @@ const selectSku = (sku) => {
   selectedSku.value = sku
 }
 
-const addToCart = () => {
+// 加入购物车逻辑
+const addToCartAction = async () => {
   if (product.value.skus.length > 0 && !selectedSku.value) {
     return showToast('Please select a specification')
   }
-  // 这里未来需要调用后端购物车接口
-  showToast('Added to Cart successfully!')
+  
+  try {
+    await addToCart({
+      product_id: product.value.id,
+      sku_id: selectedSku.value ? selectedSku.value.id : 0,
+      quantity: 1
+    })
+    showToast('Added to Cart successfully!')
+  } catch (e) {
+    showToast('Failed to add to cart')
+  }
 }
 
 const buyNow = () => {
   if (product.value.skus.length > 0 && !selectedSku.value) {
     return showToast('Please select a specification')
   }
-  // 跳转到结算页
   router.push('/checkout')
 }
 </script>
