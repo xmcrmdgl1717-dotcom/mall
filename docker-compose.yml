@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mall
+    ports: ["3306:3306"]
+    volumes:
+      - ./backend/migrations:/docker-entrypoint-initdb.d
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports: ["9200:9200"]
