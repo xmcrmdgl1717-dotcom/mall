@@ -16,7 +16,7 @@
           <button @click="doSearch">Search</button>
         </div>
         
-        <!-- 已修改：用户操作区 -->
+        <!-- 用户操作区 (已加跳转) -->
         <div class="user-actions">
           <span @click="$router.push('/user')" style="cursor: pointer;">👤 Me</span>
           <span @click="$router.push('/cart')" style="cursor: pointer;">🛒 Cart</span>
@@ -47,6 +47,7 @@
           </van-swipe-item>
         </van-swipe>
       </div>
+      <!-- 如果后台没配 Banner，显示占位图 -->
       <div class="banner-section" v-else>
         <img src="https://picsum.photos/1200/350?grayscale" style="width: 100%; border-radius: 8px; height: 350px; object-fit: cover;" />
       </div>
