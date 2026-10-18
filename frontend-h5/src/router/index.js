@@ -38,6 +38,17 @@ const router = createRouter({
       path: '/store/:id',
       name: 'StoreDetail',
       component: () => import('../views/StoreDetail.vue')
+    },
+    // 👇 新增：个人中心与地址管理
+    {
+      path: '/user',
+      name: 'UserCenter',
+      component: () => import('../views/UserCenter.vue')
+    },
+    {
+      path: '/addresses',
+      name: 'AddressList',
+      component: () => import('../views/AddressList.vue')
     }
   ]
 })
