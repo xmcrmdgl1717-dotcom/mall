@@ -30,6 +30,16 @@ if err != nil {
 r := router.New(db, cfg.Secret)
 // ...
 
+var count int64
+db.Model(&model.AdminUser{}).Where("username = ?", "admin").Count(&count)
+if count == 0 {
+    db.Create(&model.AdminUser{
+        Username: "admin",
+        Password: "admin123", // 实际项目记得加密
+    })
+    log.Println("Default admin account created: admin / admin123")
+}
+
 func main() {
 	cfg := config.Load()
 	db, err := repository.NewDB(cfg.DBDSN)
