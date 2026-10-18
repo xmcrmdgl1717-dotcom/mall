@@ -55,7 +55,7 @@
           <a href="#" class="view-all">More ></a>
         </div>
         <div class="product-grid">
-          <div class="product-card" v-for="p in dailyDeals" :key="p.id">
+          <div class="product-card" v-for="p in dailyDeals" :key="p.id" @click="$router.push('/product/' + p.id)">
             <img :src="p.main_image" class="p-img" />
             <div class="p-price">${{ p.min_price }}</div>
             <div class="p-sales">Sold {{ p.total_sales }}</div>
@@ -84,7 +84,7 @@
           <h2>Popular Items</h2>
         </div>
         <div class="product-grid">
-          <div class="product-card" v-for="p in popularItems" :key="p.id">
+          <div class="product-card" v-for="p in popularItems" :key="p.id" @click="$router.push('/product/' + p.id)">
              <img :src="p.main_image" class="p-img" />
             <div class="p-price">${{ p.min_price }}</div>
             <div class="p-sales">Sold {{ p.total_sales }}</div>
@@ -124,7 +124,7 @@
           <h2>Hot Deals</h2>
         </div>
         <div class="product-grid">
-          <div class="product-card" v-for="p in hotDeals" :key="p.id">
+          <div class="product-card" v-for="p in hotDeals" :key="p.id" @click="$router.push('/product/' + p.id)">
              <img :src="p.main_image" class="p-img" />
             <div class="p-price">${{ p.min_price }}</div>
             <div class="p-sales">Sold {{ p.total_sales }}</div>
@@ -161,7 +161,6 @@ const popularStores = ref([])
 
 onMounted(async () => {
   try {
-    // 真实场景下这里可以使用 Promise.all 并发请求
     const dailyRes = await getProducts({ deal_type: 'daily', size: 10 })
     dailyDeals.value = dailyRes.data.data.list || []
 
@@ -174,7 +173,6 @@ onMounted(async () => {
     const storeRes = await getTopMerchants()
     popularStores.value = storeRes.data.data || []
     
-    // 如果没有数据，用假数据占位防止白屏
     if (dailyDeals.value.length === 0) {
        dailyDeals.value = Array(5).fill({ id: 1, title: 'YLTNEUQER Jade Roller Gua Sha Set', min_price: '5.62', total_sales: 1358, main_image: 'https://picsum.photos/200' })
     }
@@ -185,7 +183,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* 这里因为篇幅限制，只提供核心样式，你需要结合 Flex 布局微调 */
 .home-container { background: #f5f5f5; font-family: Arial, sans-serif; min-width: 1200px; }
 .header { background: #fff; padding: 15px 0; border-bottom: 1px solid #eee; }
 .top-bar { display: flex; justify-content: space-between; align-items: center; width: 1200px; margin: 0 auto; }
@@ -215,13 +212,13 @@ onMounted(async () => {
 .category-item span { font-size: 12px; color: #333; }
 
 .product-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; }
-.product-card { border: 1px solid #f0f0f0; border-radius: 8px; padding: 10px; transition: 0.3s; display: flex; flex-direction: column; }
+.product-card { border: 1px solid #f0f0f0; border-radius: 8px; padding: 10px; transition: 0.3s; display: flex; flex-direction: column; cursor: pointer; }
 .product-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 .p-img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; margin-bottom: 8px; background: #f9f9f9; }
 .p-price { color: #e4393c; font-size: 16px; font-weight: bold; }
 .p-sales { font-size: 12px; color: #999; margin-bottom: 5px; }
 .p-title { font-size: 13px; color: #333; height: 36px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 18px; margin-bottom: 10px; flex-grow: 1;}
-.p-actions { display: flex; justify-content: space-between; font-size: 12px; color: #666; cursor: pointer; border-top: 1px solid #eee; padding-top: 10px; }
+.p-actions { display: flex; justify-content: space-between; font-size: 12px; color: #666; border-top: 1px solid #eee; padding-top: 10px; }
 
 .seller-banner { background: #fdf1e9; border-radius: 8px; padding: 40px; margin-bottom: 20px; display: flex; align-items: center; justify-content: flex-end; background-image: url('https://picsum.photos/1200/200'); background-size: cover; }
 .seller-banner .text { text-align: right; }
