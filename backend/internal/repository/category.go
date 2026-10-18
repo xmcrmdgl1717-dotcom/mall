@@ -38,3 +38,17 @@ func (r *BannerRepo) ListActive() ([]model.Banner, error) {
 	err := r.db.Where("status = ?", 1).Order("sort ASC").Find(&list).Error
 	return list, err
 }
+// 完善 Banner 数据库操作
+func (r *BannerRepo) ListAll() ([]model.Banner, error) {
+	var list []model.Banner
+	err := r.db.Order("sort ASC").Find(&list).Error
+	return list, err
+}
+
+func (r *BannerRepo) Create(b *model.Banner) error {
+	return r.db.Create(b).Error
+}
+
+func (r *BannerRepo) Delete(id uint64) error {
+	return r.db.Delete(&model.Banner{}, id).Error
+}
