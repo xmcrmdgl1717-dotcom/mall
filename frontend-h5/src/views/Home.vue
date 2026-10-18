@@ -13,9 +13,10 @@
           />
           <button @click="doSearch">Search</button>
         </div>
+        <!-- 👇 更新：个人中心与购物车跳转 -->
         <div class="user-actions">
-          <span>👤 Log in or Register</span>
-          <span>🛒 Cart</span>
+          <span @click="$router.push('/user')" style="cursor: pointer; font-weight: bold;">👤 My Account</span>
+          <span @click="$router.push('/cart')" style="cursor: pointer; margin-left: 15px;">🛒 Cart</span>
         </div>
       </div>
       <nav class="nav-links">
