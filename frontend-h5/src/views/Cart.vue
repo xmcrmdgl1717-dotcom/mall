@@ -40,9 +40,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router' // 👈 必须要引入这个
 import { getCartList, deleteCartItem } from '../api/cart'
 import { showToast, showConfirmDialog } from 'vant'
 
+const router = useRouter() // 👈 初始化 router
 const cartList = ref([])
 
 const fetchCart = async () => {
@@ -60,7 +62,6 @@ onMounted(() => {
   fetchCart()
 })
 
-// 计算总价 (这里为了方便简单乘100，实际应该转换成分为单位)
 const totalPrice = computed(() => {
   return cartList.value
     .filter(item => item.selected === 1)
@@ -70,7 +71,6 @@ const totalPrice = computed(() => {
     }, 0)
 })
 
-// 全选逻辑
 const allChecked = computed({
   get: () => cartList.value.length > 0 && cartList.value.every(item => item.selected === 1),
   set: (val) => {
@@ -93,10 +93,12 @@ const onDelete = async (id) => {
   }
 }
 
+// 点击去结算
 const onSubmit = () => {
   const selectedItems = cartList.value.filter(item => item.selected === 1)
   if (selectedItems.length === 0) return showToast('Please select items')
-  showToast('Going to checkout... (To be implemented)')
+  // 跳转到结算页
+  router.push('/checkout')
 }
 </script>
 
