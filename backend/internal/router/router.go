@@ -13,25 +13,6 @@ import (
 
 func New(db *gorm.DB, secret string) *gin.Engine {
 	r := gin.Default()
-	// ... CORS 代码保持不变 ...
-
-	// ... 原有的 Repo 初始化 ...
-
-	// 初始化新增的 Handler
-	authHandler := handler.NewAuthHandler(db, secret)
-
-	api := r.Group("/api/v1")
-	{
-		api.POST("/admin/login", authHandler.Login) // 登录接口
-		
-		// 其他原有接口...
-		api.GET("/products", productHandler.List)
-		api.GET("/products/:id", productHandler.Detail)
-		api.POST("/products", productHandler.Create) // 新增商品接口
-		// ...
-	}
-	return r
-}
 
 	// 配置跨域
 	r.Use(cors.New(cors.Config{
@@ -52,12 +33,20 @@ func New(db *gorm.DB, secret string) *gin.Engine {
 	productHandler := handler.NewProductHandler(productRepo)
 	categoryHandler := handler.NewCategoryHandler(categoryRepo)
 	merchantHandler := handler.NewMerchantHandler(merchantRepo)
+	authHandler := handler.NewAuthHandler(db, secret) // 注意这里传了 secret
 
-	// 注册路由
+	// 注册路由组
 	api := r.Group("/api/v1")
 	{
+		// 登录接口
+		api.POST("/admin/login", authHandler.Login)
+
+		// 商品接口
 		api.GET("/products", productHandler.List)
 		api.GET("/products/:id", productHandler.Detail)
+		api.POST("/products", productHandler.Create)
+
+		// 分类与店铺接口
 		api.GET("/categories", categoryHandler.List)
 		api.GET("/merchants/top", merchantHandler.ListTop)
 	}
