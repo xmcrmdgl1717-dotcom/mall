@@ -24,18 +24,20 @@ func New(db *gorm.DB, secret string) *gin.Engine {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	// 初始化 Repo
+	// 初始化所有 Repo
 	productRepo := repository.NewProductRepo(db)
 	categoryRepo := repository.NewCategoryRepo(db)
 	merchantRepo := repository.NewMerchantRepo(db)
+	cartRepo := repository.NewCartRepo(db) // 新增
 
-	// 初始化 Handler
+	// 初始化所有 Handler
 	productHandler := handler.NewProductHandler(productRepo)
 	categoryHandler := handler.NewCategoryHandler(categoryRepo)
 	merchantHandler := handler.NewMerchantHandler(merchantRepo)
-	authHandler := handler.NewAuthHandler(db, secret) // 注意这里传了 secret
+	authHandler := handler.NewAuthHandler(db, secret)
+	cartHandler := handler.NewCartHandler(cartRepo) // 新增
 
-	// 注册路由组
+	// 注册路由
 	api := r.Group("/api/v1")
 	{
 		// 登录接口
@@ -49,6 +51,11 @@ func New(db *gorm.DB, secret string) *gin.Engine {
 		// 分类与店铺接口
 		api.GET("/categories", categoryHandler.List)
 		api.GET("/merchants/top", merchantHandler.ListTop)
+
+		// 购物车接口 (新增)
+		api.GET("/cart", cartHandler.List)
+		api.POST("/cart", cartHandler.Add)
+		api.DELETE("/cart/:id", cartHandler.Delete)
 	}
 	
 	return r
