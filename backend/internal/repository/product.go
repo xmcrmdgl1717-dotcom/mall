@@ -13,18 +13,20 @@ type ProductRepo struct {
 func NewProductRepo(db *gorm.DB) *ProductRepo {
 	return &ProductRepo{db: db}
 }
-func (r *ProductRepo) GetByID(id uint64) (*model.Product, error) {
-	var product model.Product
-	// Preload 会去查 product_sku 表并组装到 Skus 字段
-	err := r.db.Preload("Skus").First(&product, id).Error
-	return &product, err
-}
 
-func (r *ProductRepo) List(categoryID uint64, sort string, page, size int) ([]model.Product, int64, error) {
+// List 接收 5 个参数，包含 dealType 用来区分特惠
+func (r *ProductRepo) List(categoryID uint64, sort string, page, size int, dealType string) ([]model.Product, int64, error) {
 	q := r.db.Model(&model.Product{}).Where("status = ?", 1)
 	
 	if categoryID > 0 {
 		q = q.Where("category_id = ?", categoryID)
+	}
+
+	// 新增的判断：如果是特惠商品
+	if dealType == "daily" {
+		q = q.Where("is_daily_deal = 1")
+	} else if dealType == "hot" {
+		q = q.Where("is_hot_deal = 1")
 	}
 
 	var total int64
@@ -45,4 +47,11 @@ func (r *ProductRepo) List(categoryID uint64, sort string, page, size int) ([]mo
 	var list []model.Product
 	err := q.Order(order).Offset((page - 1) * size).Limit(size).Find(&list).Error
 	return list, total, err
+}
+
+// GetByID 获取单个商品详情（带 SKU）
+func (r *ProductRepo) GetByID(id uint64) (*model.Product, error) {
+	var product model.Product
+	err := r.db.Preload("Skus").First(&product, id).Error
+	return &product, err
 }
